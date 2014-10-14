@@ -1,0 +1,82 @@
+
+Red team ffTeam with {}:
+Loading Team: ffTeam.py
+Arguments: {}
+
+Blue team dummyTeam with {}:
+Loading Team: dummyTeam.py
+Arguments: {}
+Blue team starts
+%%%%%%%%%%
+%G..  ..G%
+%G.    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+%GG.  ..G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% GG  ..G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% .GG ..G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% ..G<..G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% .. <<.G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% ..  <<G%
+% .    .G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% ..   <G%
+% .    ^G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% ..  > G%
+% .   > G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% .. >  G%
+% .  >  G%
+%%%%%%%%%%
+Score: 0
+
+%%%%%%%%%%
+% ..G   G%
+% . G   G%
+%%%%%%%%%%
+Score: 3
+
+%%%%%%%%%%
+% ..G   G%
+% . G   G%
+%%%%%%%%%%
+Score: 3
+
+The Red team has returned at least 1 of the opponents' dots.

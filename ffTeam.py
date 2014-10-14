@@ -17,6 +17,9 @@ from captureAgents import CaptureAgent
 import random, time, util
 from game import Directions
 import game
+import platform
+import sys
+import os
 
 #################
 # Team creation #
@@ -82,36 +85,87 @@ class ffAgentHunter(CaptureAgent):
     Your initialization code goes here, if you need any.
     '''
     self.generatePDDLDomain()
-    # gameState.data.layout
 
   def createPDDLobjects(self, gameState):
     objects = ""
 
+    # First we build the PDDL objects; the positions
+    # layout is of type Layout, in layout.py
+    layout = gameState.data.layout
+
+    for i in range(0,layout.width):
+      for j in range(0,layout.height):
+        objects = objects + " p_" + str(i) + "_" + str(j)
+
+    objects = objects + " - pos"
+      
+    return objects
+
+  def createPDDLfluents(self, gameState):
+    fluents = ""
+
     # obs is of type GameState, found in capture.py
     obs = self.getCurrentObservation()
 
-    # First we deal with the valid spaces for movement
+    # First we add the current position
+    pos = gameState.getAgentPosition(self.index)
+    fluents = fluents + "\t\t(At " + "p_" + str(pos[0]) + "_" + str(pos[1]) + ")\n"
 
-    # Now deal with the food to hunt
-    # print obs.getRedFood() , '\n'
-    # print self.red, self.index, '\n'
+    # Now we deal with the walls
+    # walls is of type Grid, found in game.py
+    walls = gameState.getWalls()
+    wallsList = walls.asList()
+    
+    # For every grid position
+    for i in range(0,walls.width):
+      for j in range(0,walls.height):
+        # Check the position is a wall
+        currPos = "p_" + str(i) + "_" + str(j)
+        if (i,j) not in wallsList:
+          # If it is not a wall, check each of its neightbours,
+          # and add them to the adjacency list if they are free
+          # Check left
+          if (i - 1 >= 0) and ((i - 1,j) not in wallsList):
+            fluents = fluents + "\t\t(Adjacent " + currPos + " " + "p_" + str(i-1) + "_" + str(j) + ")\n"
+          # Check right
+          if (i + 1 < walls.width) and ((i + 1,j) not in wallsList):
+            fluents = fluents + "\t\t(Adjacent " + currPos + " " + "p_" + str(i+1) + "_" + str(j) + ")\n"
+          # Check up
+          if (j + 1 >= 0) and ((i,j+1) not in wallsList):
+            fluents = fluents + "\t\t(Adjacent " + currPos + " " + "p_" + str(i) + "_" + str(j+1) + ")\n"
+          # Check down
+          if (j - 1 >= 0) and ((i,j-1) not in wallsList):
+            fluents = fluents + "\t\t(Adjacent " + currPos + " " + "p_" + str(i) + "_" + str(j-1) + ")\n"    
 
+    # This is a hunter type Agent, so we add the food to hunt on the opposing side
     # food is of type Grid, found in game.py
     if gameState.isOnRedTeam(self.index):
-      food = gameState.getRedFood().asList()
-    else:
       food = gameState.getBlueFood().asList()
+    else:
+      food = gameState.getRedFood().asList()
 
-    print food
-
-    #for 
-    return ""
-
-  def createPDDLfluents(self, gameState):
-    return ""
+    for x,y in food:
+      fluents = fluents + "\t\t(FoodAt p_" + str(x) + "_" + str(y) + ")\n"
+      
+    return fluents
 
   def createPDDLgoal(self, gameState):
-    return ""
+    goals = ""
+
+    # This is a hunter type Agent, so its main objective is to eat food
+    if gameState.isOnRedTeam(self.index):
+      food = gameState.getBlueFood().asList()
+    else:
+      food = gameState.getRedFood().asList()
+
+    # No food, so run home
+    if len(food) == 0:
+      goals = goals + "\t\t(At p_" + str(1) + "_" + str(1) + ")\n"
+    else:
+      for x,y in food:
+        goals = goals + "\t\t(not (FoodAt p_" + str(x) + "_" + str(y) + "))\n"
+    
+    return goals
 
   def generatePDDLproblem(self, gameState): 
 	"""
@@ -123,15 +177,13 @@ class ffAgentHunter(CaptureAgent):
 	lines = list();
 	lines.append("(define (problem pacman-problem)\n");
    	lines.append("   (:domain pacman)\n");
-   	lines.append("   (:objects \n");
-	lines.append( self.createPDDLobjects(gameState) + "\n");
-	lines.append("    )\n");
+   	lines.append("   (:objects " + self.createPDDLobjects(gameState) + ")\n");
 	lines.append("   (:init \n");\
-	lines.append( self.createPDDLfluents(gameState) + "\n");
+	lines.append( self.createPDDLfluents(gameState));
         lines.append("    )\n");
         lines.append("   (:goal \n");          
         lines.append("	( and  \n");
-        lines.append( self.createPDDLgoal(gameState) + "\n");
+        lines.append( self.createPDDLgoal(gameState));
         lines.append("	)\n");
         lines.append("   )\n");
         lines.append(")\n");
@@ -140,19 +192,53 @@ class ffAgentHunter(CaptureAgent):
 	f.close();
 
   def chooseAction(self, gameState):
-    """
-    Picks among actions randomly.
-    """
+
+    action = 'Stop'
+    
     #actions = gameState.getLegalActions(self.index)
 
     self.generatePDDLproblem(gameState)
 
-    '''
-    You should change this in your own agent.
-    '''
+    # If we're not on Windows, assume a Unix system (the servers)
+    if not platform.system() == "Windows":
+      # Call the ff planner
+      out = os.popen("/home/subjects/482/local/project/ff -o pacman-domain.pddl -f problem"\
+                   + str(self.index + 1) + ".pddl").read()
+      # Split the output into lines
+      ffPlan = out.split("\n")
+      # Find the first MOVE action
+      for s in ffPlan:
+        pos = s.find("MOVE")
+        if pos > 0:
+          # We only care about the to and from positions
+          fromPos,toPos = s[pos+5:].split()
+          _,xCurr,yCurr = fromPos.split("_")
+          _,xNext,yNext = toPos.split("_")
 
-    #return random.choice(actions)
-    return 'Stop'
+          xCurr = int(xCurr)
+          yCurr = int(yCurr)
+          xNext = int(xNext)
+          yNext = int(yNext)
+
+          # Moving right
+          if (xNext - xCurr == 1):
+            action = 'East'
+          # Moving left
+          elif (xNext - xCurr == -1):
+            action = 'West'
+          # Moving up
+          elif (yNext - yCurr == 1):
+            action = 'North'
+          # Moving down
+          elif (yNext - yCurr == -1):
+            action = 'South'
+          # Not moving
+          else:
+            action = 'Stop'
+
+          break
+    
+    return action
   
   # Generates the PDDL Domain file (should only ever need to be done once, offline)
   def generatePDDLDomain(self):
