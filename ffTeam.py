@@ -23,7 +23,7 @@ import game
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'ffAgent', second = 'ffAgent'):
+               first = 'ffAgentHunter', second = 'ffAgentHunter'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -46,7 +46,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class ffAgent(CaptureAgent):
+class ffAgentHunter(CaptureAgent):
   """
   A Dummy agent to serve as an example of the necessary agent structure.
   You should look at baselineTeam.py for more details about how to
@@ -85,15 +85,24 @@ class ffAgent(CaptureAgent):
     # gameState.data.layout
 
   def createPDDLobjects(self, gameState):
-    objects = ''
+    objects = ""
+
+    # obs is of type GameState, found in capture.py
+    obs = self.getCurrentObservation()
 
     # First we deal with the valid spaces for movement
-    obs = self.getCurrentObservation()
-    
+
+    # Now deal with the food to hunt
+    # print obs.getRedFood() , '\n'
+    # print self.red, self.index, '\n'
+
+    # food is of type Grid, found in game.py
     if gameState.isOnRedTeam(self.index):
-      food = gameState.getRedFood()
+      food = gameState.getRedFood().asList()
     else:
-      food = gameState.getBlueFood()
+      food = gameState.getBlueFood().asList()
+
+    print food
 
     #for 
     return ""

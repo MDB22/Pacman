@@ -23,7 +23,7 @@ import game
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'ffAgent', second = 'ffAgent'):
+               first = 'dummyAgent', second = 'dummyAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -46,7 +46,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class ffAgent(CaptureAgent):
+class dummyAgent(CaptureAgent):
   """
   A Dummy agent to serve as an example of the necessary agent structure.
   You should look at baselineTeam.py for more details about how to
@@ -88,8 +88,6 @@ class ffAgent(CaptureAgent):
     Picks among actions randomly.
     """
     #actions = gameState.getLegalActions(self.index)
-
-    self.generatePDDLproblem(gameState)
 
     '''
     You should change this in your own agent.
