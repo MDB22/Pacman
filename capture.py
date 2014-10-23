@@ -26,7 +26,7 @@ Capture.py holds the logic for Pacman capture the flag.
 
   (i)  Your interface to the pacman world:
           Pacman is a complex environment.  You probably don't want to
-          read through all of the code we wrote to make the game runs
+          read through all of the code we wrote to make the game run
           correctly.  This section contains the parts of the code
           that you will need to understand in order to complete the
           project.  There is also some code in game.py that you should
